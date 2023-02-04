@@ -27,5 +27,12 @@ SOCIAL = (('You can add links in your config file', '#'),
 
 DEFAULT_PAGINATION = 10
 
+# theme
+THEME = 'pneumatic'
+
+# plugins
+PLUGINS = ["sitemap", "webassets", "neighbors"]
+SITEMAP = {'format': "xml"}
+
 # Uncomment following line if you want document-relative URLs when developing
 #RELATIVE_URLS = True
