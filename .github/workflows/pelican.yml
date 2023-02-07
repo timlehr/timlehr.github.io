@@ -10,15 +10,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - name: Clone repos & submodules
+      uses: actions/checkout@v3
       with:
         submodules: recursive
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/setup-node@v3
       with:
-        ruby-version: '3.0'
-    - run:
-        gem install sass -v 3.4.25
-    - uses: justgoodin/pelican-to-github-pages@v1.0.2
+        node-version: 16
+    - run: npm -i node-sass@3.10.1
+    - name: Build & deploy with Pelican
+      uses: justgoodin/pelican-to-github-pages@v1.0.2
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         GH_PAGES_CNAME: ${{secrets.DOMAIN_CNAME}}
