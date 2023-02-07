@@ -1,3 +1,4 @@
 [submodule "pneumatic"]
 	path = pneumatic
-	url = https://github.com/iKevinY/pneumatic.git
+	url = https://github.com/timlehr/pneumatic.git
+	branch = pelican-gh-fix
