@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - uses: justgoodin/pelican-to-github-pages@v1.0.2
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
