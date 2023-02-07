@@ -17,7 +17,7 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: 16
-    - run: npm -i node-sass@3.10.1
+    - run: npm install sass@1.58.0
     - name: Build & deploy with Pelican
       uses: justgoodin/pelican-to-github-pages@v1.0.2
       env:
