@@ -15,12 +15,15 @@ jobs:
       with:
         submodules: recursive
     - name: Install Sass
-      run: sudo apt-get install sass
+      run: sudo apt-get install ruby2.2 ruby2.2-dev
+      run: gem install sass -v 3.4.25
     - name: Add Sass to PATH
       run: echo "export PATH=$PATH:$(which sass)" >> $GITHUB_ENV
     - name: Verify Sass Installation
       run: sass --version
     - name: Build & deploy with Pelican
+      run: echo "$(which sass)"
+      run: echo "$PATH"
       uses: justgoodin/pelican-to-github-pages@v1.0.2
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
