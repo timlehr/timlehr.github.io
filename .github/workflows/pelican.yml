@@ -15,7 +15,7 @@ jobs:
       with:
         submodules: recursive
     - name: Build & deploy with Pelican
-      uses: timlehr/gh-pages-pelican-action@main
+      uses: timlehr/gh-pages-pelican-action@master
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         GH_PAGES_CNAME: ${{secrets.DOMAIN_CNAME}}
