@@ -15,9 +15,7 @@ jobs:
       with:
         submodules: recursive
     - name: Build & deploy with Pelican
-      uses: justgoodin/pelican-to-github-pages@v1.0.2
+      uses: timlehr/gh-pages-pelican-action
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         GH_PAGES_CNAME: ${{secrets.DOMAIN_CNAME}}
-        PELICAN_THEME_FOLDER: pneumatic
-        PATH: $PATH:$GITHUB_WORKSPACE/pneumatic/node_modules/.bin
