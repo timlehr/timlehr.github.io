@@ -4,7 +4,7 @@ Author: Tim Lehr
 Category: Nuke, Python
 Tags: Environment, Nuke, Python
 Slug: nuke-environment-variables-in-read-write
-original_url: nuke-environment-variables-in-read-write.html
+original_url: nuke-environment-variables-in-read-write/index.html
 Status: published
 
 In my job as a Pipeline TD I often resort to old school [environment variables](https://en.wikipedia.org/wiki/Environment_variable) to make my life easier. Not only are they really easy to work with, they are also a commonly supported way of keeping file paths relative to a dynamically changeable directory. This is super helpful, as you will be able to open your existing production files in a different location, without the need to change any of the paths hardcoded into it. If you are a Maya or Houdini user, you are probably very familiar with paths like this: *\$SHOT_ROOT/scene_v001.ma*
