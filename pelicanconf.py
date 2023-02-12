@@ -2,7 +2,7 @@ AUTHOR = 'Tim Lehr'
 SITENAME = 'Tim Lehr'
 BIO_TEXT = 'Software Engineer <a href="https://disneyanimation.com" target="_blank" rel="noopener noreferrer">@disneyanimation</a>'
 FOOTER_TEXT = 'Powered by <a href="http://getpelican.com" target="_blank" rel="noopener noreferrer">Pelican</a> and <a href="http://pages.github.com">GitHub&nbsp;Pages</a>.'
-INDEX_DESCRIPTION = 'Website of Tim Lehr, Software Engineer for animation pipelines working at Walt Disney Animation Studios.'
+INDEX_DESCRIPTION = 'Website of Tim Lehr, Software Engineer working at Walt Disney Animation Studios.'
 
 PATH = 'content'
 
@@ -34,22 +34,13 @@ MONTH_ARCHIVE_SAVE_AS = '{date:%Y}/{date:%m}/index.html'
 DIRECT_TEMPLATES = ['index', 'archives']
 CATEGORY_SAVE_AS = ''
 
-
-# Blogroll
-LINKS = (('Pelican', 'https://getpelican.com/'),
-         ('Python.org', 'https://www.python.org/'),
-         ('Jinja2', 'https://palletsprojects.com/p/jinja/'),
-         ('You can modify those links in your config file', '#'),)
-
 # Social widget
 SOCIAL = (('You can add links in your config file', '#'),
           ('Another social link', '#'),)
 
-DEFAULT_PAGINATION = 10
-
 # PLUGINS
 PLUGIN_PATHS = ["plugins"]
-PLUGINS = ["sitemap", "assets", "neighbors"]
+PLUGINS = ["sitemap", "assets", "neighbors", "pelican_redirect"]
 
 SITEMAP = {'format': "xml"}
 
@@ -75,16 +66,19 @@ MARKDOWN = {
 
 # *** THEME ***
 THEME = 'pneumatic'
-THEME_COLOR = '#FF8000'
-STATIC_PATHS = ['res', 'articles', '.well-known']
+THEME_COLOR = '#FFFFFF'
+STATIC_PATHS = ['res', 'articles', 'wp-posts', '.well-known']
+extras = ['CNAME', 'favicon.ico']
+EXTRA_PATH_METADATA = {'extra/%s' % file: {'path': file} for file in extras}
 ICONS_PATH = 'res/icons'
 TYPOGRIFY = True
 
 # Social
 SOCIAL_ICONS = [
     ('https://www.linkedin.com/in/lehrtim/', 'LinkedIn', 'fa-linkedin'),
-    ('https://twitter.com/PunSolo', 'Twitter', 'fa-twitter'),
+    #('https://twitter.com/PunSolo', 'Twitter', 'fa-twitter'),
     ('https://github.com/timlehr', 'GitHub', 'fa-github'),
+    ('https://www.imdb.com/name/nm11461846/', 'IMDb', 'fa-imdb'),
     ('mailto:03.must_gimlets@icloud.com', 'Email', 'fa-envelope'),
 ]
 
