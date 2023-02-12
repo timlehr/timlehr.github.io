@@ -4,7 +4,7 @@ Author: Tim Lehr
 Category: Arnold, Maya
 Tags: Arnold, Maya, Python
 Slug: export-all-maya-render-layers-as-ass-files-using-python
-original_url: export-all-maya-render-layers-as-ass-files-using-python.html
+original_url: export-all-maya-render-layers-as-ass-files-using-python/index.html
 Status: published
 
 You would think exporting all render layers in Maya to *Arnold Scene Source* (.ass) files could be done without much hassle. So did I. To be fair, any confusion over this matter is a result of Mayas new render setup introduced a few years ago. At the time of this writing, Arnold can only export geometry and settings from the currently active render layer. To conveniently switch render layers for export while maintaining the current scene state for the artist, we can write ourselves a small context manager.

@@ -4,7 +4,7 @@ Author: Tim Lehr
 Category: C++, Maya
 Tags: C++, Caching, Maya, Plugin
 Slug: hyperdrive-my-approach-to-pose-based-rig-caching-in-maya
-original_url: hyperdrive-my-approach-to-pose-based-rig-caching-in-maya.html
+original_url: hyperdrive-my-approach-to-pose-based-rig-caching-in-maya/index.html
 Status: published
 
 This blog posts covers my approaches on the topic of *posed-based rig caching*, which I prototyped as a Maya plugin during my TD studies at Filmakademie. I called this project **Hyperdrive** and recently [published the source code](https://github.com/timlehr/hyperdrive) of the most recent prototype on Github. It's heavily inspired by the pose-based rig caching solution developed and presented by Disney Animation at Siggraph 2015: ["Achieving Real-Time Playback with Production Rigs"](https://dl.acm.org/citation.cfm?id=2792519){rel="nofollow"}

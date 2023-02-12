@@ -3,7 +3,7 @@ Date: 2018-01-31 22:36
 Author: Tim Lehr
 Category: Python, SQL
 Slug: lazy-database-initialization-with-peewee-proxy-subclasses
-original_url: lazy-database-initialization-with-peewee-proxy-subclasses.html
+original_url: lazy-database-initialization-with-peewee-proxy-subclasses/index.html
 Status: published
 
 If you are working with a SQL database in Python, I highly recommend to take a look at [peewee](https://peewee.readthedocs.io/en/latest/). It's a small, but very powerful ORM (Object relational mapping) tool that makes the interaction with your database very pythonic, convenient and quite easy to learn (especially for the SQL beginners among you). I personally use peewee for my production pipeline tool-set called *Scarif*, which I currently develop with a fellow TD here at Filmakademie. So far, peewee has been an invaluable package for us, that saves us a lot of time during development.

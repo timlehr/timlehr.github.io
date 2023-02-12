@@ -4,7 +4,7 @@ Author: Tim Lehr
 Category: Houdini, Nuke, Python
 Tags: Houdini
 Slug: use-python-wheels-with-houdini-nuke-in-2019
-original_url: use-python-wheels-with-houdini-nuke-in-2019.html
+original_url: use-python-wheels-with-houdini-nuke-in-2019/index.html
 Status: published
 
 During development of our pipeline toolset Scarif, I came across an issue with DCC Applications and certain Python packages. Since we are using quite a few open source Python modules to power our pipeline tools, we resort to a [virtual environment](https://virtualenv.pypa.io/en/latest/) in combination with [pip](https://pypi.org/project/pip/) to install and manage all these packages. Today, the almost all popular packages are usually distributed as a [Python Wheel](https://pythonwheels.com). Wheels are a modern approach to Python packaging and meant as the replacement for the ageing [Python Egg](https://setuptools.readthedocs.io/en/latest/formats.html) packaging solution. I wont go into details on the difference between the two solutions in this article, but if you are interested, feel free to have a look at [the official differentiation](https://packaging.python.org/discussions/wheel-vs-egg/). Extending a Python environment with a new *site-packages* directory containing packages such as eggs and wheels is a very easy thing to do.

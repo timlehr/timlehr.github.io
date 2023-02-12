@@ -3,7 +3,7 @@ Date: 2018-01-29 00:45
 Author: Tim Lehr
 Category: Python, Qt
 Slug: python-exception-hooks-with-qt-message-box
-original_url: python-exception-hooks-with-qt-message-box.html
+original_url: python-exception-hooks-with-qt-message-box/index.html
 Status: published
 
 When you develop complex applications or toolsets with Python, a good logging module and proper exception handling can save you a lot of headaches. Especially when those tools go into deployment, they are *never* bug-free and sooner or later people will tell you about all the unexpected issues they have. With proper logging you can pinpoint those bugs quickly, but often they happen in the most unlikely of places and you end up with an uncaught exception.

@@ -4,7 +4,7 @@ Author: Tim Lehr
 Category: Editorial, Python
 Tags: DaVinci, Python
 Slug: python-scripting-in-davinci-resolve
-original_url: python-scripting-in-davinci-resolve.html
+original_url: python-scripting-in-davinci-resolve/index.html
 Status: published
 
 Starting with *DaVinci Resolve 15*, Developer Blackmagic added new Scripting functionality to the popular Editing / Grading Suite. The Scripting API (Fusion Script) is implemented in a separate executable called *fuscript,* which supports two languages at the time of writing: Python 2.7 / 3 and Lua. The integration of Python is especially exciting for any Pipeline developer out there, as it allows for a tighter integration of Resolve into existing production pipelines. Pixars [OpenTimelineIO](https://github.com/PixarAnimationStudios/OpenTimelineIO) is living proof that there is quite the demand for this kind of stuff!

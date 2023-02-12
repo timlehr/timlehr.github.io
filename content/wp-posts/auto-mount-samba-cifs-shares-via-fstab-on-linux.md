@@ -3,7 +3,7 @@ Date: 2018-01-30 00:22
 Author: Tim Lehr
 Category: Linux
 Slug: auto-mount-samba-cifs-shares-via-fstab-on-linux
-original_url: auto-mount-samba-cifs-shares-via-fstab-on-linux.html
+original_url: auto-mount-samba-cifs-shares-via-fstab-on-linux/index.html
 Status: published
 
 I've been a happy Linux user for quite a while now, but even I cannot deny that it's sometimes quite hard to get things running smoothly - especially in a Windows dominated environment with little control. One of the things that breaks once in a while on my workstation is the automatic network share mounting I set up via */etc/fstab*. This is usually caused by some server-side update that doesn't affect the setups of Windows and Mac users, but can break your fstab mounting commands in a heartbeat.
