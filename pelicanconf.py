@@ -88,5 +88,3 @@ SIDEBAR_LINKS = [
     '<a href="/about/">About</a>',
     '<a href="/archive/">Archive</a>',
 ]
-
-# **************
