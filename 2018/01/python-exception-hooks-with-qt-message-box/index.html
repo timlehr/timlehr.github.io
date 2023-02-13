@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Basic Metas -->
+	<meta charset="utf-8">
+	<title>Python exception hooks with Qt message box | Tim Lehr</title>
+	<meta name="description" content="When you develop complex applications or toolsets with Python, a good logging module and proper exception handling can save you a lot of headaches. Especially when those tools go into deployment, they are never bug-free and sooner or later people will tell …">
+	<meta name="author" content="">
+	<link rel="author" href=""/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<!-- Twitter Cards and Open Graph -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:creator" content="">
+	<meta name="twitter:domain" content="">
+	<meta name="twitter:site" content="">
+	<meta property="og:title" content="Python exception hooks with Qt message box">
+	<meta property="og:description" content="When you develop complex applications or toolsets with Python, a good logging module and proper exception handling can save you a lot of headaches. Especially when those tools go into deployment, they are never bug-free and sooner or later people will tell …">
+	<meta property="og:image" content="/res/icons/avatar.png">
+	<meta property="og:type" content="article">
+	<meta property="og:url" content="/2018/01/python-exception-hooks-with-qt-message-box/">
+
+	<!-- Stylesheets and Web Fonts -->
+	<link href="/theme/style.min.css" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Favicons -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/res/icons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="/res/icons/favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="/res/icons/favicon-32x32.png" sizes="32x32">
+	<meta name="theme-color" content="#FFFFFF">
+
+	<meta name="msapplication-TileColor" content="#FFFFFF">
+	<meta name="msapplication-TileImage" content="/res/icons/mstile-144x144.png">
+	<meta name="msapplication-square70x70logo" content="/res/icons/mstile-small.png">
+	<meta name="msapplication-square150x150logo" content="/res/icons/mstile-medium.png">
+	<meta name="msapplication-wide310x150logo" content="/res/icons/mstile-wide.png">
+	<meta name="msapplication-square310x310logo" content="/res/icons/mstile-large.png">
+
+	<!--[if lt IE 9]>
+	<script src="/theme/js/html5shiv.min.js"></script>
+	<script src="/theme/js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+	<div class="container">
+		<aside>
+			<a href="/"><img id="avatar" alt="Site Avatar" src="/res/icons/avatar.png"></a>
+			<div id="name"><a href="/">Tim Lehr</a></div>
+			<div id="bio">Software Engineer <a href="https://disneyanimation.com" target="_blank" rel="noopener noreferrer">@disneyanimation</a></div>
+
+			<div id="sidebar-links">
+				<a href="/about/">About</a>&nbsp;|&nbsp;<a href="/archive/">Archive</a>
+			</div>
+
+			<div id="social">
+				<a href="https://www.linkedin.com/in/lehrtim/" title="LinkedIn" class="icon fa fa-linkedin"></a>
+				<a href="https://github.com/timlehr" title="GitHub" class="icon fa fa-github"></a>
+				<a href="https://www.imdb.com/name/nm11461846/" title="IMDb" class="icon fa fa-imdb"></a>
+				<a href="mailto:03.must_gimlets@icloud.com" title="Email" class="icon fa fa-envelope"></a>
+			</div>
+
+			<hr id="sidebar-divider">
+		</aside>
+
+		<article>
+	<h1 class="title"><a href="/2018/01/python-exception-hooks-with-qt-message-box/" title="Permalink to Python exception hooks with Qt message box">Python exception hooks with Qt message&nbsp;box</a></h1>
+	<time class="date" datetime="2018-01-29 00:45:00-08:00">January 29, 2018</time>
+	<div class="content">
+		<p>When you develop complex applications or toolsets with Python, a good logging module and proper exception handling can save you a lot of headaches. Especially when those tools go into deployment, they are <em>never</em> bug-free and sooner or later people will tell you about all the unexpected issues they have. With proper logging you can pinpoint those bugs quickly, but often they happen in the most unlikely of places and you end up with an uncaught&nbsp;exception.</p>
+<p>Depending on your application, uncaught exceptions might be completely invisible to the user, especially in applications developed with PySide / PyQt. If the user isn&#8217;t looking at the stdout of your application or checking the logs, Pythons forgiving nature might make the user completely unaware that something bad happened, until it&#8217;s too late. To deal with this issue, I recently adopted exception hooks in my Python applications, which allows me to hook custom functionality to the interpreter, in case an unhandled exception is raised during runtime. My solution is heavily inspired by the <a href="https://github.com/ColinDuquesnoy/QCrash">QCrash report framework</a> developed by Colin Duquesnoy, minus the flexibility it provides. With just a couple of lines, it is however, much&nbsp;lighter.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">Qt</span> <span class="kn">import</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtWidgets</span>
+
+<span class="c1"># basic logger functionality</span>
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+<span class="n">log</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">show_exception_box</span><span class="p">(</span><span class="n">log_msg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks if a QApplication instance is available and shows a messagebox with the exception message. </span>
+<span class="sd">    If unavailable (non-console application), log an additional notice.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QApplication</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">errorbox</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QMessageBox</span><span class="p">()</span>
+            <span class="n">errorbox</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;Oops. An unexpected error occured:</span><span class="se">\n</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">log_msg</span><span class="p">))</span>
+            <span class="n">errorbox</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No QApplication instance available.&quot;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">UncaughtHook</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="p">):</span>
+    <span class="n">_exception_caught</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Signal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UncaughtHook</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># this registers the exception_hook() function as hook with the Python interpreter</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exception_hook</span>
+
+        <span class="c1"># connect signal to execute the message box function always on main thread</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exception_caught</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">show_exception_box</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">exception_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">exc_traceback</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function handling uncaught exceptions.</span>
+<span class="sd">        It is triggered each time an uncaught exception occurs. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">exc_type</span><span class="p">,</span> <span class="ne">KeyboardInterrupt</span><span class="p">):</span>
+            <span class="c1"># ignore keyboard interrupt to support console applications</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">__excepthook__</span><span class="p">(</span><span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">exc_traceback</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exc_info</span> <span class="o">=</span> <span class="p">(</span><span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">exc_traceback</span><span class="p">)</span>
+            <span class="n">log_msg</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_tb</span><span class="p">(</span><span class="n">exc_traceback</span><span class="p">)),</span>
+                                 <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">: </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">exc_type</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">)])</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;Uncaught exception:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">log_msg</span><span class="p">),</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">exc_info</span><span class="p">)</span>
+
+            <span class="c1"># trigger message box show</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_exception_caught</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">log_msg</span><span class="p">)</span>
+
+<span class="c1"># create a global instance of our class to register the hook</span>
+<span class="n">qt_exception_hook</span> <span class="o">=</span> <span class="n">UncaughtHook</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Just paste it somewhere in one of your modules imported during application launch (preferably your logger) and you should be good to go. The code creates a new global object that hooks a function to the interpreter and also makes sure that said function is always executed on the main thread. This is important, since exceptions can occur on any thread - something that doesn&#8217;t play nice with Qt widgets. If you have any issues with the code snippet, feel free to leave a comment. Happy coding,&nbsp;everyone!</p>
+	</div>
+
+	<div id="related-articles">
+		<a href="/2018/01/auto-mount-samba-cifs-shares-via-fstab-on-linux/" id="next-neighbour">&laquo; Auto-mount Samba / CIFS shares via fstab on Linux</a>
+	</div>
+
+			<hr>
+		</article>
+
+		<footer>
+			<p>Powered by <a href="http://getpelican.com" target="_blank" rel="noopener noreferrer">Pelican</a> and <a href="http://pages.github.com">GitHub&nbsp;Pages</a>.</p>
+		</footer>
+	</div>
+
+
+</body>
+</html>

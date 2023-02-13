@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Basic Metas -->
+	<meta charset="utf-8">
+	<title>Export all Maya render layers as ASS files using Python | Tim Lehr</title>
+	<meta name="description" content="You would think exporting all render layers in Maya to Arnold Scene Source (.ass) files could be done without much hassle. So did I. To be fair, any confusion over this matter is a result of Mayas new render setup introduced a …">
+	<meta name="author" content="">
+	<link rel="author" href=""/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<!-- Twitter Cards and Open Graph -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:creator" content="">
+	<meta name="twitter:domain" content="">
+	<meta name="twitter:site" content="">
+	<meta property="og:title" content="Export all Maya render layers as ASS files using Python">
+	<meta property="og:description" content="You would think exporting all render layers in Maya to Arnold Scene Source (.ass) files could be done without much hassle. So did I. To be fair, any confusion over this matter is a result of Mayas new render setup introduced a …">
+	<meta property="og:image" content="/res/icons/avatar.png">
+	<meta property="og:type" content="article">
+	<meta property="og:url" content="/2019/04/export-all-maya-render-layers-as-ass-files-using-python/">
+
+	<!-- Stylesheets and Web Fonts -->
+	<link href="/theme/style.min.css" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Favicons -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/res/icons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="/res/icons/favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="/res/icons/favicon-32x32.png" sizes="32x32">
+	<meta name="theme-color" content="#FFFFFF">
+
+	<meta name="msapplication-TileColor" content="#FFFFFF">
+	<meta name="msapplication-TileImage" content="/res/icons/mstile-144x144.png">
+	<meta name="msapplication-square70x70logo" content="/res/icons/mstile-small.png">
+	<meta name="msapplication-square150x150logo" content="/res/icons/mstile-medium.png">
+	<meta name="msapplication-wide310x150logo" content="/res/icons/mstile-wide.png">
+	<meta name="msapplication-square310x310logo" content="/res/icons/mstile-large.png">
+
+	<!--[if lt IE 9]>
+	<script src="/theme/js/html5shiv.min.js"></script>
+	<script src="/theme/js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+	<div class="container">
+		<aside>
+			<a href="/"><img id="avatar" alt="Site Avatar" src="/res/icons/avatar.png"></a>
+			<div id="name"><a href="/">Tim Lehr</a></div>
+			<div id="bio">Software Engineer <a href="https://disneyanimation.com" target="_blank" rel="noopener noreferrer">@disneyanimation</a></div>
+
+			<div id="sidebar-links">
+				<a href="/about/">About</a>&nbsp;|&nbsp;<a href="/archive/">Archive</a>
+			</div>
+
+			<div id="social">
+				<a href="https://www.linkedin.com/in/lehrtim/" title="LinkedIn" class="icon fa fa-linkedin"></a>
+				<a href="https://github.com/timlehr" title="GitHub" class="icon fa fa-github"></a>
+				<a href="https://www.imdb.com/name/nm11461846/" title="IMDb" class="icon fa fa-imdb"></a>
+				<a href="mailto:03.must_gimlets@icloud.com" title="Email" class="icon fa fa-envelope"></a>
+			</div>
+
+			<hr id="sidebar-divider">
+		</aside>
+
+		<article>
+	<h1 class="title"><a href="/2019/04/export-all-maya-render-layers-as-ass-files-using-python/" title="Permalink to Export all Maya render layers as ASS files using Python">Export all Maya render layers as <span class="caps">ASS</span> files using&nbsp;Python</a></h1>
+	<time class="date" datetime="2019-04-06 23:22:00-07:00">April 6, 2019</time>
+	<div class="content">
+		<p>You would think exporting all render layers in Maya to <em>Arnold Scene Source</em> (.ass) files could be done without much hassle. So did I. To be fair, any confusion over this matter is a result of Mayas new render setup introduced a few years ago. At the time of this writing, Arnold can only export geometry and settings from the currently active render layer. To conveniently switch render layers for export while maintaining the current scene state for the artist, we can write ourselves a small context&nbsp;manager.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">contextlib</span>
+<span class="kn">import</span> <span class="nn">maya.app.renderSetup.model.renderSetup</span> <span class="k">as</span> <span class="nn">renderSetup</span>
+
+<span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+<span class="k">def</span> <span class="nf">maintained_render_layer</span><span class="p">():</span>
+    <span class="n">previous_rs</span> <span class="o">=</span> <span class="n">renderSetup</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">getVisibleRenderLayer</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">renderSetup</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">switchToLayer</span><span class="p">(</span><span class="n">previous_rs</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Now we can use another code snippet to conveniently export all render layers to <span class="caps">ASS</span>&nbsp;files.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">maya.app.renderSetup.model.renderSetup</span> <span class="k">as</span> <span class="nn">renderSetup</span>
+<span class="kn">import</span> <span class="nn">pymel.core</span> <span class="k">as</span> <span class="nn">pm</span>
+
+<span class="n">export_options</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># supply your own arnoldExportAss options here         </span>
+<span class="k">with</span> <span class="n">maintained_render_layer</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">renderSetup</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">getRenderLayers</span><span class="p">():</span>
+        <span class="n">layer_name</span><span class="p">,</span> <span class="n">layer_obj</span> <span class="o">=</span> <span class="n">render_layer</span>
+        <span class="n">mayautil</span><span class="o">.</span><span class="n">set_current_render_layer</span><span class="p">(</span><span class="n">layer_obj</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Run ASS Export for render layer &quot;</span>
+              <span class="s2">&quot;&#39;</span><span class="si">{}</span><span class="s2">&#39; with options: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span> <span class="n">export_options</span><span class="p">))</span>
+        <span class="n">pm</span><span class="o">.</span><span class="n">other</span><span class="o">.</span><span class="n">arnoldExportAss</span><span class="p">(</span><span class="o">**</span><span class="n">export_options</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Check out this thread for <a href="https://answers.arnoldrenderer.com/questions/3652/flags-for-mayacmdsarnoldexportass.html">available arnoldExportAss options</a>.</p>
+	</div>
+
+	<div id="related-articles">
+		<a href="/2019/04/nuke-environment-variables-in-read-write/" id="next-neighbour">&laquo; Nuke: Environment Variables in Read / Write</a>
+		<a href="/2018/12/python-scripting-in-davinci-resolve/" id="prev-neighbour">Python Scripting in DaVinci Resolve &raquo;</a>
+	</div>
+
+			<hr>
+		</article>
+
+		<footer>
+			<p>Powered by <a href="http://getpelican.com" target="_blank" rel="noopener noreferrer">Pelican</a> and <a href="http://pages.github.com">GitHub&nbsp;Pages</a>.</p>
+		</footer>
+	</div>
+
+
+</body>
+</html>
