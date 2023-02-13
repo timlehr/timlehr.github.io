@@ -67,7 +67,7 @@ MARKDOWN = {
 # *** THEME ***
 THEME = 'pneumatic'
 THEME_COLOR = '#FFFFFF'
-STATIC_PATHS = ['res', "extra", 'articles', 'wp-posts', '.well-known']
+STATIC_PATHS = ['res', "extra", 'articles', 'wp-posts', '.well-known', "extra/CNAME"]
 
 extras = ['CNAME', 'favicon.ico']
 EXTRA_PATH_METADATA = {'extra/%s' % file: {'path': file} for file in extras}
