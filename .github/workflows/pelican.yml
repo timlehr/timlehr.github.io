@@ -24,12 +24,4 @@ jobs:
       uses: timlehr/gh-pages-pelican-action@master
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        GH_PAGES_CNAME: ${{secrets.DOMAIN_CNAME}}
-    - name: Deploy 🚀
-      uses: JamesIves/github-pages-deploy-action@v4
-      env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      with:
-        branch: gh-pages
-        folder: output
-        clean: true
+        GH_PAGES_CNAME: ${{secrets.GH_PAGES_CNAME}}
