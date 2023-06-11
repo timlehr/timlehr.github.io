@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Basic Metas -->
+	<meta charset="utf-8">
+	<title>Hyperdrive: My approach to pose-based rig caching in Maya | Tim Lehr</title>
+	<meta name="description" content="This blog posts covers my approaches on the topic of posed-based rig caching, which I prototyped as a Maya plugin during my TD studies at Filmakademie. I called this project Hyperdrive and recently published the source code of the most recent prototype …">
+	<meta name="author" content="">
+	<link rel="author" href=""/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<!-- Twitter Cards and Open Graph -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:creator" content="">
+	<meta name="twitter:domain" content="">
+	<meta name="twitter:site" content="">
+	<meta property="og:title" content="Hyperdrive: My approach to pose-based rig caching in Maya">
+	<meta property="og:description" content="This blog posts covers my approaches on the topic of posed-based rig caching, which I prototyped as a Maya plugin during my TD studies at Filmakademie. I called this project Hyperdrive and recently published the source code of the most recent prototype …">
+	<meta property="og:image" content="/res/icons/avatar.png">
+	<meta property="og:type" content="article">
+	<meta property="og:url" content="/2019/04/hyperdrive-my-approach-to-pose-based-rig-caching-in-maya/">
+
+	<!-- Stylesheets and Web Fonts -->
+	<link href="/theme/style.min.css" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Favicons -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/res/icons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="/res/icons/favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="/res/icons/favicon-32x32.png" sizes="32x32">
+	<meta name="theme-color" content="#FFFFFF">
+
+	<meta name="msapplication-TileColor" content="#FFFFFF">
+	<meta name="msapplication-TileImage" content="/res/icons/mstile-144x144.png">
+	<meta name="msapplication-square70x70logo" content="/res/icons/mstile-small.png">
+	<meta name="msapplication-square150x150logo" content="/res/icons/mstile-medium.png">
+	<meta name="msapplication-wide310x150logo" content="/res/icons/mstile-wide.png">
+	<meta name="msapplication-square310x310logo" content="/res/icons/mstile-large.png">
+
+	<!--[if lt IE 9]>
+	<script src="/theme/js/html5shiv.min.js"></script>
+	<script src="/theme/js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+	<div class="container">
+		<aside>
+			<a href="/"><img id="avatar" alt="Site Avatar" src="/res/icons/avatar.png"></a>
+			<div id="name"><a href="/">Tim Lehr</a></div>
+			<div id="bio">Software Engineer <a href="https://disneyanimation.com" target="_blank" rel="noopener noreferrer">@disneyanimation</a></div>
+
+			<div id="sidebar-links">
+				<a href="/about/">About</a>&nbsp;|&nbsp;<a href="/archive/">Archive</a>
+			</div>
+
+			<div id="social">
+				<a href="https://www.linkedin.com/in/lehrtim/" title="LinkedIn" class="icon fa fa-linkedin"></a>
+				<a href="https://github.com/timlehr" title="GitHub" class="icon fa fa-github"></a>
+				<a href="https://www.imdb.com/name/nm11461846/" title="IMDb" class="icon fa fa-imdb"></a>
+				<a href="mailto:03.must_gimlets@icloud.com" title="Email" class="icon fa fa-envelope"></a>
+			</div>
+
+			<hr id="sidebar-divider">
+		</aside>
+
+		<article>
+	<h1 class="title"><a href="/2019/04/hyperdrive-my-approach-to-pose-based-rig-caching-in-maya/" title="Permalink to Hyperdrive: My approach to pose-based rig caching in Maya">Hyperdrive: My approach to pose-based rig caching in&nbsp;Maya</a></h1>
+	<time class="date" datetime="2019-04-29 20:15:00-07:00">April 29, 2019</time>
+	<div class="content">
+		<p>This blog posts covers my approaches on the topic of <em>posed-based rig caching</em>, which I prototyped as a Maya plugin during my <span class="caps">TD</span> studies at Filmakademie. I called this project <strong>Hyperdrive</strong> and recently <a href="https://github.com/timlehr/hyperdrive">published the source code</a> of the most recent prototype on Github. It&#8217;s heavily inspired by the pose-based rig caching solution developed and presented by Disney Animation at Siggraph 2015: <a href="https://dl.acm.org/citation.cfm?id=2792519" rel="nofollow">&#8220;Achieving Real-Time Playback with Production&nbsp;Rigs&#8221;</a></p>
+<p>Unlike common caching approaches available in <span class="caps">DCC</span> applications, this approach doesn&#8217;t rely on time-based geometry caching. Instead it is utulizing the character rig animation values to calculate a unique pose <span class="caps">ID</span>, which points to a certain set of deformed character meshes stored in the cache. These poses are frame independent and can be re-used across different frame-ranges and even animation&nbsp;scenes.</p>
+<h2>Caching&nbsp;approaches</h2>
+<p>Throughout development of the prototype, the by far most challenging aspect and most common troublemaker was the Graph Evaluation inside Maya. To tackle this issue, I tried various approaches - all within the limited access of the Maya C++ <span class="caps">SDK</span> - with mostly mixed results. The following paragraphs are a short breakdown of what worked, what didn&#8217;t work and where the current limitations of the plugins are&nbsp;drawn.</p>
+<h3 id="id-03Hyperdrive-Summary(TL)-Approach1:DGEvaluation">Approach 1: <span class="caps">DG</span>&nbsp;Evaluation</h3>
+<p>The first Hyperdrive prototype was built on the old school <span class="caps">DG</span> evaluation, which was still state of the art until Maya 2016 replaced it with the Evaluation Manager. <span class="caps">DG</span> Evaluation relies on the propagation of dirty flags from node to node. The logic is faily simple and thus, pretty easy to control. The <span class="caps">DG</span> prototype was a single node, which computed both pose and cache output. This node was plugged between the mesh source and the output mesh node. As a result, <span class="caps">DG</span> dirty propagation would always flow through the node and Hyperdrive was able to control the dirty propagation by pretending to be&nbsp;&#8220;clean&#8221;.</p>
+<p>However, some nodes would still execute, as complex rig setups trigger dirty propagation across thousands of nodes. To counter this, Hyperdrive would take control over the <em>nodeState</em> attribute of affected nodes and <em>ask</em> them to skip computation. This simple approach worked out quite well and saw 4-5x increases in framerate with the Ratatoskr demo scene. The <span class="caps">DG</span> approach also made it easy to integrate the setup into any scene and still layer nodes on top of the setup, without breaking things. However, since <span class="caps">DG</span> is strictly single-threaded, the performance with multiple meshes was actually much <em>slower</em> than without any caching. Another bottleneck was (and still is) the Maya viewport translation of geometry. This processing step in the viewport render pipeline can take up a lot of precious computing time, especially with bigger&nbsp;meshes.</p>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/0QAQUqLyU7k?controls=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+<h3 id="id-03Hyperdrive-Summary(TL)-Approach2:ParallelEvaluation&amp;CustomEvaluator">Approach 2: Parallel Evaluation <span class="amp">&amp;</span> Custom&nbsp;Evaluator</h3>
+<p>With said limitations of the <span class="caps">DG</span> Evaluation in mind, the way forward was clearly adapting the new <em>Evaluation Manager (<span class="caps">EM</span>)</em>. The <span class="caps">EM</span> is a complete overhaul of how Maya computes it&#8217;s nodegraph. Instead of dirty propagation from back-to-front, the <span class="caps">EM</span> partitions the <span class="caps">DG</span> Graph once before evaluation start and can run the node calculation in independent <em>clusters</em>, thus enabling Parallel execution. To take advantage of this, Hyperdrive had to be restructured into two nodes: a pose node and a cache node. The pose node is responsible for hashing the animation controller values and provide a <em>Cache <span class="caps">ID</span></em> to all relevant cache nodes. Since the <span class="caps">EM</span> Graph is calculated front-to-back, it&#8217;s the only way to stop evaluation in time. Instead of <em>nodeState</em> which is not certainly stopping nodes from evaluating, the <span class="caps">EM</span> offers the <em>Frozen </em>attribute that is completely stopping any evaluation on the node, without the node developer taking care of implementing the mechanism. However, it became apparent that the parallelised computation makes it really hard to calculate the pose, and set the offer an updated <em>Frozen </em>value to dependent rig nodes in time. As a result, Hyperdrive caching would work as expected, but was unable to stop any evaluation in it&#8217;s tracks, even if the pose was already written to cache. As a result, the playback framerate would dip drastically below what you would encounter without any caching active. So while the <span class="caps">DG</span> is simple enough to control, it&#8217;s almost impossible to mess with the <span class="caps">EM</span> evaluation at runtime the same way. To counter this offer further control to developers, Autodesk provides the <em>Custom Evaluator <span class="caps">API</span></em>.</p>
+<p>An Evaluator in the <span class="caps">EM</span> is a Maya <span class="caps">API</span> class that takes control over the scheduling and partitioning of the <span class="caps">DG</span> into the <span class="caps">EM</span> Graph. It also provides the possibility to run code <em>before</em> or <em>after</em> a frame was completely evaluated. The Hyperdrive Evaluator takes advantage of this an positions itself as the Evaluator with the highest priority, thus getting access to the <span class="caps">EM</span> before any other code does. It then computes the Pose IDs for all pose nodes in the scene and checks if all relevant cache nodes have a corresponding cache. If all poses are available in the cache, Hyperdrive stops evaluation for all nodes - except it&#8217;s own pose / cache nodes, as well as the output meshes of the character. Unfortunately, this operation is still single threaded, so the amount of Hyperdrive rigs in the scene greatly increases it&#8217;s computational&nbsp;time.</p>
+<p>The Evaluator has another major drawback for Hyperdrive: A version of the evaluator which stops evaluation just on certain nodes and their history proved to be very ineffective, since complex rigs still evaluate a ton of nodes, and it&#8217;s impossible to pinpoint all the computational intensive nodes without resorting to a huge amount of manual labor. As a result the current prototype relies on stopping all node computation in the scene and whitelisting certain nodes if needed. This gives similar performance results to <span class="caps">DG</span> with about 4-5x speedup, while still being able to compute multiple mesh caches (in parallel), something that is unfeasible in <span class="caps">DG</span>. The ugly side effect of this radical approach is that unrelated animated nodes in the scene need to be whitelisted in order to compute at all while Hyperdrive is&nbsp;active.</p>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/2I8lYrASROI?controls=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+<h2>Conclusion</h2>
+<p>My research has proven it&#8217;s possible to replicate a pose-based caching setup within Autodesk Maya. However, each approach I tried has it&#8217;s own set of pitfalls making it unsuitable for productions. The first prototype using the classic <span class="caps">DG</span> evaluation approach yielded the most reliable results with little setup overhead. However, given the complexity of modern character rigs, it&#8217;s single threaded nature limits the use-cases. The parallel prototype is much more flexible and able to compute nodes in parallel, but it&#8217;s also very hard to skip the necessary evaluation steps without breaking the scene. It&#8217;s results with Hyperdrive are more opaque than the output of <span class="caps">DG</span>, even though the tools to control it are much&nbsp;better.</p>
+<p>To make the system suitable for production, easier profiling tools and an even more low-level Evaluation <span class="caps">API</span> would be needed. The second bottleneck, slow mesh drawing on the <span class="caps">GPU</span>, can&#8217;t be fixed with any Maya functionality and would require direct OpenGL drawing of the cached geometry, bypassing any further Maya processing (like Disney does). This would require a lot of work, as all the viewport interaction needs to be&nbsp;replicated.</p>
+<p>For productions going forward, a switch to Maya 2019 is recommendable. The latest version of the application comes with brand new caching functionality, allowing Maya to cache the graph evaluation in a background thread and only re-cache invalid frame ranges. This still doesn&#8217;t quite have the same effect as a pose based approach which is completely independent of time and animation scenes, but it gives the animator consistent playback speed with an interactive&nbsp;viewport.</p>
+	</div>
+
+	<div id="related-articles">
+		<a href="/2023/06/career-resources-jobs-salary-animation-vfx-industry/" id="next-neighbour">&laquo; Career Resources for Job Opportunities and Salary Insights in the Animation / VFX industry</a>
+		<a href="/2019/04/use-python-wheels-with-houdini-nuke-in-2019/" id="prev-neighbour">Use Python Wheels with Houdini / Nuke in 2019 &raquo;</a>
+	</div>
+
+			<hr>
+		</article>
+
+		<footer>
+			<p>Powered by <a href="http://getpelican.com" target="_blank" rel="noopener noreferrer">Pelican</a> and <a href="http://pages.github.com">GitHub&nbsp;Pages</a>.</p>
+		</footer>
+	</div>
+
+
+</body>
+</html>

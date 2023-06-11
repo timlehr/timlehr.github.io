@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Basic Metas -->
+	<meta charset="utf-8">
+	<title>Auto-mount Samba / CIFS shares via fstab on Linux | Tim Lehr</title>
+	<meta name="description" content="I’ve been a happy Linux user for quite a while now, but even I cannot deny that it’s sometimes quite hard to get things running smoothly - especially in a Windows dominated environment with little control. One of the things that …">
+	<meta name="author" content="">
+	<link rel="author" href=""/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<!-- Twitter Cards and Open Graph -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:creator" content="">
+	<meta name="twitter:domain" content="">
+	<meta name="twitter:site" content="">
+	<meta property="og:title" content="Auto-mount Samba / CIFS shares via fstab on Linux">
+	<meta property="og:description" content="I’ve been a happy Linux user for quite a while now, but even I cannot deny that it’s sometimes quite hard to get things running smoothly - especially in a Windows dominated environment with little control. One of the things that …">
+	<meta property="og:image" content="/res/icons/avatar.png">
+	<meta property="og:type" content="article">
+	<meta property="og:url" content="/2018/01/auto-mount-samba-cifs-shares-via-fstab-on-linux/">
+
+	<!-- Stylesheets and Web Fonts -->
+	<link href="/theme/style.min.css" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Favicons -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/res/icons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="/res/icons/favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="/res/icons/favicon-32x32.png" sizes="32x32">
+	<meta name="theme-color" content="#FFFFFF">
+
+	<meta name="msapplication-TileColor" content="#FFFFFF">
+	<meta name="msapplication-TileImage" content="/res/icons/mstile-144x144.png">
+	<meta name="msapplication-square70x70logo" content="/res/icons/mstile-small.png">
+	<meta name="msapplication-square150x150logo" content="/res/icons/mstile-medium.png">
+	<meta name="msapplication-wide310x150logo" content="/res/icons/mstile-wide.png">
+	<meta name="msapplication-square310x310logo" content="/res/icons/mstile-large.png">
+
+	<!--[if lt IE 9]>
+	<script src="/theme/js/html5shiv.min.js"></script>
+	<script src="/theme/js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+	<div class="container">
+		<aside>
+			<a href="/"><img id="avatar" alt="Site Avatar" src="/res/icons/avatar.png"></a>
+			<div id="name"><a href="/">Tim Lehr</a></div>
+			<div id="bio">Software Engineer <a href="https://disneyanimation.com" target="_blank" rel="noopener noreferrer">@disneyanimation</a></div>
+
+			<div id="sidebar-links">
+				<a href="/about/">About</a>&nbsp;|&nbsp;<a href="/archive/">Archive</a>
+			</div>
+
+			<div id="social">
+				<a href="https://www.linkedin.com/in/lehrtim/" title="LinkedIn" class="icon fa fa-linkedin"></a>
+				<a href="https://github.com/timlehr" title="GitHub" class="icon fa fa-github"></a>
+				<a href="https://www.imdb.com/name/nm11461846/" title="IMDb" class="icon fa fa-imdb"></a>
+				<a href="mailto:03.must_gimlets@icloud.com" title="Email" class="icon fa fa-envelope"></a>
+			</div>
+
+			<hr id="sidebar-divider">
+		</aside>
+
+		<article>
+	<h1 class="title"><a href="/2018/01/auto-mount-samba-cifs-shares-via-fstab-on-linux/" title="Permalink to Auto-mount Samba / CIFS shares via fstab on Linux">Auto-mount Samba / <span class="caps">CIFS</span> shares via fstab on&nbsp;Linux</a></h1>
+	<time class="date" datetime="2018-01-30 00:22:00-08:00">January 30, 2018</time>
+	<div class="content">
+		<p>I&#8217;ve been a happy Linux user for quite a while now, but even I cannot deny that it&#8217;s sometimes quite hard to get things running smoothly - especially in a Windows dominated environment with little control. One of the things that breaks once in a while on my workstation is the automatic network share mounting I set up via <em>/etc/fstab</em>. This is usually caused by some server-side update that doesn&#8217;t affect the setups of Windows and Mac users, but can break your fstab mounting commands in a&nbsp;heartbeat.</p>
+<p>Unfortunately, when things break, the feedback you get from running <em>mount -a</em> is often rather generic and of little help. A typical&nbsp;error:</p>
+<div class="codehilite"><pre><span></span><code>sudo mount -a
+mount error(5): Input/output error
+Refer to the mount.cifs(8) manual page (e.g. man mount.cifs)
+</code></pre></div>
+
+<p>Not too helpful, is it? Debugging issues like this one can be quite tedious and time consuming, so I decided to write a little guide to mounting Windows (Samba) network shares on Linux (Fedora 26 in my case). There are a lot of guides out there already, but I found some things especially important and wanted to point those out. Let&#8217;s get&nbsp;started.</p>
+<h3>1. Install&nbsp;dependencies</h3>
+<p>Install the necessary &#8220;cifs-utils&#8221; with the package manager of your choice e.g. <span class="caps">DNF</span> on&nbsp;Fedora.</p>
+<div class="codehilite"><pre><span></span><code>sudo dnf install cifs-utils
+</code></pre></div>
+
+<h3>2. Create&nbsp;mountpoints</h3>
+<p>Create a directory (mountpoint) in <em>/media</em> for every network share you want to mount. If <em>/media </em>does not exist yet, create it first. This is the location where you commonly mount removable volumes in Linux. After the mount is successful, you access all files on your network share from that directory, so be sure to give it a good name. e.g. <em>/media/mordor</em></p>
+<h3>3. Create a credentials file&nbsp;(optional)</h3>
+<p>Usually network shares have access protection, so you&#8217;ll want to store your user credentials in a local credentials file. If you don&#8217;t want this, you&#8217;ll have to specify the credentials everytime you want to mount, so I highly recommend it, as long as it&#8217;s your machine you are mounting on. The credential file should be in any location in your user directory, e.g. <em>/home/tim/.smb</em>, and should look similiar to&nbsp;this:</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">user</span><span class="o">=</span>tim
+<span class="nv">password</span><span class="o">=</span>mySecretPassword
+<span class="nv">domain</span><span class="o">=</span>myDomain
+</code></pre></div>
+
+<h3>4. Edit&nbsp;/etc/fstab</h3>
+<p>Now you should be all set and ready to edit your <em>/etc/fstab </em>file to do some mount magic. Just open the file with a text editor of your choice and add the following lines to the bottom of the&nbsp;file.</p>
+<p><strong>Important:</strong> Do not change or delete any other lines in the file! This can do serious harm to your system configuration and you might end up with a broken <span class="caps">OS</span>. You have been&nbsp;warned.</p>
+<div class="codehilite"><pre><span></span><code>#<span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">Windows</span><span class="w"> </span><span class="nv">Server</span><span class="w"> </span><span class="mi">2008</span><span class="w"> </span><span class="nv">samba</span><span class="w"> </span><span class="nv">shares</span>:
+<span class="o">//</span><span class="nv">mordor</span><span class="w">    </span><span class="o">/</span><span class="nv">media</span><span class="o">/</span><span class="nv">mordor</span><span class="w">       </span><span class="nv">cifs</span><span class="w">    </span><span class="nv">uid</span><span class="o">=</span><span class="mi">0</span>,<span class="nv">credentials</span><span class="o">=/</span><span class="nv">home</span><span class="o">/</span><span class="nv">tim</span><span class="o">/</span>.<span class="nv">smb</span>,<span class="nv">iocharset</span><span class="o">=</span><span class="nv">utf8</span>,<span class="nv">noperm</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span>
+#<span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="nv">Windows</span><span class="w"> </span><span class="nv">Server</span><span class="w"> </span><span class="mi">2016</span><span class="w"> </span><span class="nv">samba</span><span class="w"> </span><span class="nv">shares</span>:
+<span class="o">//</span><span class="nv">isengard</span><span class="w">  </span><span class="o">/</span><span class="nv">media</span><span class="o">/</span><span class="nv">isengard</span><span class="w">     </span><span class="nv">cifs</span><span class="w">    </span><span class="nv">uid</span><span class="o">=</span><span class="mi">0</span>,<span class="nv">credentials</span><span class="o">=/</span><span class="nv">home</span><span class="o">/</span><span class="nv">tim</span><span class="o">/</span>.<span class="nv">smb</span>,<span class="nv">iocharset</span><span class="o">=</span><span class="nv">utf8</span>,<span class="nv">vers</span><span class="o">=</span><span class="mi">3</span>.<span class="mi">0</span>,<span class="nv">noperm</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span>
+</code></pre></div>
+
+<p><strong>Notice the small difference?</strong> If things do not work, it&#8217;s usually because the &#8220;vers&#8221; argument is not set or incorrect. It specifies the Samba version to be used and depending on your server setup this might range from &#8220;<em>vers=1.0&#8221;</em> to &#8220;<em>vers=3.0&#8221;</em>. In my experience you best start of trying to mount the share without it and try-again with different settings if this doesn&#8217;t work&nbsp;out.</p>
+<p>For Windows server 2008 shares I can usually get away without it. In more recent versions like Windows Server 2016 it likely needs to be &#8220;<em>vers=2.1&#8221;</em> or &#8220;<em>vers=3.0&#8221;</em>. However, my experience so far is limited to Fedora and a single network, so you might have to tweak the value some&nbsp;more.</p>
+<h3>5. Manually mount the share for&nbsp;testing</h3>
+<p>Although entries in <em>/etc/fstab</em> are automatically mounted when the system boots, it&#8217;s pretty annoying to debug your mount command this way. Here are two commands handy to manually mount and unmount all entries in&nbsp;fstab.</p>
+<div class="codehilite"><pre><span></span><code>sudo mount -a
+sudo umount -a
+</code></pre></div>
+
+<p>If you run the first command and do not get any errors, the mounting seems to have worked out fine. Don&#8217;t forget to check your mountpoint to make sure you have read / write&nbsp;access!</p>
+<p>If you have any issues with your setup, feel free to leave a comment and I&#8217;ll try my best to help you out, although I&#8217;m far from being an expert on this topic. Good&nbsp;luck!</p>
+	</div>
+
+	<div id="related-articles">
+		<a href="/2018/01/lazy-database-initialization-with-peewee-proxy-subclasses/" id="next-neighbour">&laquo; Lazy database initialization with peewee proxy subclasses</a>
+		<a href="/2018/01/python-exception-hooks-with-qt-message-box/" id="prev-neighbour">Python exception hooks with Qt message box &raquo;</a>
+	</div>
+
+			<hr>
+		</article>
+
+		<footer>
+			<p>Powered by <a href="http://getpelican.com" target="_blank" rel="noopener noreferrer">Pelican</a> and <a href="http://pages.github.com">GitHub&nbsp;Pages</a>.</p>
+		</footer>
+	</div>
+
+
+</body>
+</html>

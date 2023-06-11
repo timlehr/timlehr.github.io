@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Basic Metas -->
+	<meta charset="utf-8">
+	<title>Nuke: Environment Variables in Read / Write | Tim Lehr</title>
+	<meta name="description" content="In my job as a Pipeline TD I often resort to old school environment variables to make my life easier. Not only are they really easy to work with, they are also a commonly supported way of keeping file paths relative to …">
+	<meta name="author" content="">
+	<link rel="author" href=""/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<!-- Twitter Cards and Open Graph -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:creator" content="">
+	<meta name="twitter:domain" content="">
+	<meta name="twitter:site" content="">
+	<meta property="og:title" content="Nuke: Environment Variables in Read / Write">
+	<meta property="og:description" content="In my job as a Pipeline TD I often resort to old school environment variables to make my life easier. Not only are they really easy to work with, they are also a commonly supported way of keeping file paths relative to …">
+	<meta property="og:image" content="/res/icons/avatar.png">
+	<meta property="og:type" content="article">
+	<meta property="og:url" content="/2019/04/nuke-environment-variables-in-read-write/">
+
+	<!-- Stylesheets and Web Fonts -->
+	<link href="/theme/style.min.css" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Favicons -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/res/icons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="/res/icons/favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="/res/icons/favicon-32x32.png" sizes="32x32">
+	<meta name="theme-color" content="#FFFFFF">
+
+	<meta name="msapplication-TileColor" content="#FFFFFF">
+	<meta name="msapplication-TileImage" content="/res/icons/mstile-144x144.png">
+	<meta name="msapplication-square70x70logo" content="/res/icons/mstile-small.png">
+	<meta name="msapplication-square150x150logo" content="/res/icons/mstile-medium.png">
+	<meta name="msapplication-wide310x150logo" content="/res/icons/mstile-wide.png">
+	<meta name="msapplication-square310x310logo" content="/res/icons/mstile-large.png">
+
+	<!--[if lt IE 9]>
+	<script src="/theme/js/html5shiv.min.js"></script>
+	<script src="/theme/js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+	<div class="container">
+		<aside>
+			<a href="/"><img id="avatar" alt="Site Avatar" src="/res/icons/avatar.png"></a>
+			<div id="name"><a href="/">Tim Lehr</a></div>
+			<div id="bio">Software Engineer <a href="https://disneyanimation.com" target="_blank" rel="noopener noreferrer">@disneyanimation</a></div>
+
+			<div id="sidebar-links">
+				<a href="/about/">About</a>&nbsp;|&nbsp;<a href="/archive/">Archive</a>
+			</div>
+
+			<div id="social">
+				<a href="https://www.linkedin.com/in/lehrtim/" title="LinkedIn" class="icon fa fa-linkedin"></a>
+				<a href="https://github.com/timlehr" title="GitHub" class="icon fa fa-github"></a>
+				<a href="https://www.imdb.com/name/nm11461846/" title="IMDb" class="icon fa fa-imdb"></a>
+				<a href="mailto:03.must_gimlets@icloud.com" title="Email" class="icon fa fa-envelope"></a>
+			</div>
+
+			<hr id="sidebar-divider">
+		</aside>
+
+		<article>
+	<h1 class="title"><a href="/2019/04/nuke-environment-variables-in-read-write/" title="Permalink to Nuke: Environment Variables in Read / Write">Nuke: Environment Variables in Read /&nbsp;Write</a></h1>
+	<time class="date" datetime="2019-04-11 09:18:00-07:00">April 11, 2019</time>
+	<div class="content">
+		<p>In my job as a Pipeline <span class="caps">TD</span> I often resort to old school <a href="https://en.wikipedia.org/wiki/Environment_variable">environment variables</a> to make my life easier. Not only are they really easy to work with, they are also a commonly supported way of keeping file paths relative to a dynamically changeable directory. This is super helpful, as you will be able to open your existing production files in a different location, without the need to change any of the paths hardcoded into it. If you are a Maya or Houdini user, you are probably very familiar with paths like this: <em>\$SHOT_ROOT/scene_v001.ma</em></p>
+<p>Wouldn&#8217;t it be cool to have the same solution in Nuke for Read / Write (or any other node for that matter)? Unfortunately, out of the box, a path like this will not work in Nuke at all and throw an error to the user. So to make this work we need to take care of resolving the variable ourselves. So far I&#8217;ve found multiple solutions for this - if you know of a better one, please <a href="mailto:03.must_gimlets@icloud.com">shoot me a mail</a>.</p>
+<h2>Filename Filter&nbsp;Callback</h2>
+<p>The most powerful and simplest approach to take control over Nukes filepath evaluation is a <a href="https://learn.foundry.com/nuke/developers/6.3/pythondevguide/callbacks.html#filenamefilter">filenameFilter callback</a>.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">def</span><span class="w"> </span><span class="n">filter_envvars_in_filepath</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Expand variables in path such as ``$PROJECT_ROOT``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="n">expanded_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">expanded_path</span>
+
+<span class="c1"># register callback</span>
+<span class="n">nuke</span><span class="o">.</span><span class="n">addFilenameFilter</span><span class="p">(</span><span class="n">filter_envvars_in_filepath</span><span class="p">)</span>
+</code></pre></div>
+
+<p>You can register this Python callback anywhere you like, though I would recommend doing so in a <a href="https://learn.foundry.com/nuke/developers/112/pythondevguide/startup.html"><em>init.py</em> (or <em>menu.py</em>) file</a>. The snippet will take care of replacing any variables in paths processed by Nuke with the corresponding values stored in the Python environment (<em>os.environ</em>). If a variable is not set, no changes will be made to&nbsp;it.</p>
+<h3>What about Terminal Mode / Frame&nbsp;Server?</h3>
+<p>The previously stated solution requires the filename filter to be registered every time you want to use your Nuke scripts with environment variables in your nodes. However, in some cases, this can prove difficult to set up. Depending on your render farm environment, it&#8217;s not always the most reliable solution. This also applies if are using the Nuke 11 Frame Server to speed up your renderings using multi-processing on a single machine. In these cases, the Nuke script is only every <em>read</em> <em>in background</em>, so we can apply a somewhat dirty hack to resolve the environment variable in it&#8217;s&nbsp;place.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">add_oncreate_code</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Expand environment variables on node creation in non-gui mode</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="n">nuke</span><span class="o">.</span><span class="n">thisNode</span><span class="p">()</span>
+    <span class="n">node</span><span class="o">.</span><span class="n">knob</span><span class="p">(</span><span class="s2">&quot;onCreate&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    import nuke</span>
+<span class="s2">    if &quot;-t&quot; in nuke.rawArgs: # non-gui check</span>
+<span class="s2">        node = nuke.thisNode()</span>
+<span class="s2">        knob = node.knob(&quot;file&quot;)</span>
+<span class="s2">        filename = knob.value()</span>
+<span class="s2">        expanded_path = os.path.expandvars(filename)</span>
+<span class="s2">        knob.setValue(expanded_path)</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">nuke</span><span class="o">.</span><span class="n">addOnCreate</span><span class="p">(</span><span class="n">add_oncreate_code</span><span class="p">,</span> <span class="n">nodeClass</span><span class="o">=</span><span class="s1">&#39;Read&#39;</span><span class="p">)</span>
+<span class="n">nuke</span><span class="o">.</span><span class="n">addOnCreate</span><span class="p">(</span><span class="n">add_oncreate_code</span><span class="p">,</span> <span class="n">nodeClass</span><span class="o">=</span><span class="s1">&#39;Write&#39;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>This code snippet is adding a small piece of Python code to every Read / Write node, which will replace any variables in it&#8217;s &#8220;file&#8221; knob <em>permanently</em>. Since this is quite destructive, we only ever want to use this when we are sure our render is running in the background and the Nuke script is <em>not</em> being saved after the render completed, e.g. render farm or frame server. Like the previous snippet you should call this code in your <em>init.py</em> or <em>menu.py</em>&nbsp;file.</p>
+<p><strong>Side note:</strong> As I learned recently, detecting if Nuke is running in terminal mode can be quite deceptive. While there is a variable called <em>nuke.<span class="caps">INTERACTIVE</span></em>, it&#8217;s unfortunately just an indicator if Nuke is using an interactive license. For a more reliable solution I would recommend checking the command line arguments of the process and look out for <a href="https://learn.foundry.com/nuke/content/comp_environment/configuring_nuke/command_line_operations.html#UsingcommandlineFlags">any terminal arguments</a>.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">in_terminal_mode</span> <span class="o">=</span> <span class="s2">&quot;-t&quot;</span> <span class="ow">in</span> <span class="n">nuke</span><span class="o">.</span><span class="n">rawArgs</span>
+</code></pre></div>
+
+<h2>Update <span class="caps">TCL</span> Environment from&nbsp;Python</h2>
+<p>Another solution would be updating the <span class="caps">TCL</span> environment with the necessary environment variables from Python. While the Nuke Python interpreter picks up the environment it&#8217;s running in, for any <span class="caps">TCL</span> code, we first need to set them manually. This includes the &#8220;file&#8221; knob of Read / Write nodes, which uses the <span class="caps">TCL</span> to look up it&#8217;s variables. This method is definitely inferior and a lot of pitfalls, since you need to manually keep the <span class="caps">TCL</span> environment in sync with Python and once again run into trouble once you render in background. For those of you interested, here is a simple solution on how you would get <span class="caps">TCL</span> to match your <em>os.environ </em>in&nbsp;Python.</p>
+<div class="codehilite"><pre><span></span><code>#<span class="w"> </span><span class="nv">iterate</span><span class="w"> </span><span class="nv">over</span><span class="w"> </span><span class="nv">environment</span><span class="w"> </span><span class="nv">and</span><span class="w"> </span><span class="nv">set</span><span class="w"> </span><span class="nv">it</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span><span class="nv">TCL</span>
+<span class="k">for</span><span class="w"> </span><span class="nv">key</span>,<span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="nv">in</span><span class="w"> </span><span class="nv">os</span>.<span class="nv">environ</span>.<span class="nv">iteritems</span><span class="ss">()</span>:
+<span class="w">    </span><span class="nv">nuke</span>.<span class="nv">tcl</span><span class="ss">(</span><span class="s2">&quot;set&quot;</span>,<span class="w"> </span><span class="nv">key</span>,<span class="w"> </span><span class="nv">value</span><span class="ss">)</span>
+</code></pre></div>
+	</div>
+
+	<div id="related-articles">
+		<a href="/2019/04/use-python-wheels-with-houdini-nuke-in-2019/" id="next-neighbour">&laquo; Use Python Wheels with Houdini / Nuke in 2019</a>
+		<a href="/2019/04/export-all-maya-render-layers-as-ass-files-using-python/" id="prev-neighbour">Export all Maya render layers as ASS files using Python &raquo;</a>
+	</div>
+
+			<hr>
+		</article>
+
+		<footer>
+			<p>Powered by <a href="http://getpelican.com" target="_blank" rel="noopener noreferrer">Pelican</a> and <a href="http://pages.github.com">GitHub&nbsp;Pages</a>.</p>
+		</footer>
+	</div>
+
+
+</body>
+</html>

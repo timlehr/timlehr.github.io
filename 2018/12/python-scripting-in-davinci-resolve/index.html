@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Basic Metas -->
+	<meta charset="utf-8">
+	<title>Python Scripting in DaVinci Resolve | Tim Lehr</title>
+	<meta name="description" content="Starting with DaVinci Resolve 15, Developer Blackmagic added new Scripting functionality to the popular Editing / Grading Suite. The Scripting API (Fusion Script) is implemented in a separate executable called fuscript, which supports two languages at the time of writing: Python 2.7 …">
+	<meta name="author" content="">
+	<link rel="author" href=""/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<!-- Twitter Cards and Open Graph -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:creator" content="">
+	<meta name="twitter:domain" content="">
+	<meta name="twitter:site" content="">
+	<meta property="og:title" content="Python Scripting in DaVinci Resolve">
+	<meta property="og:description" content="Starting with DaVinci Resolve 15, Developer Blackmagic added new Scripting functionality to the popular Editing / Grading Suite. The Scripting API (Fusion Script) is implemented in a separate executable called fuscript, which supports two languages at the time of writing: Python 2.7 …">
+	<meta property="og:image" content="/res/icons/avatar.png">
+	<meta property="og:type" content="article">
+	<meta property="og:url" content="/2018/12/python-scripting-in-davinci-resolve/">
+
+	<!-- Stylesheets and Web Fonts -->
+	<link href="/theme/style.min.css" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Favicons -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/res/icons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="/res/icons/favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="/res/icons/favicon-32x32.png" sizes="32x32">
+	<meta name="theme-color" content="#FFFFFF">
+
+	<meta name="msapplication-TileColor" content="#FFFFFF">
+	<meta name="msapplication-TileImage" content="/res/icons/mstile-144x144.png">
+	<meta name="msapplication-square70x70logo" content="/res/icons/mstile-small.png">
+	<meta name="msapplication-square150x150logo" content="/res/icons/mstile-medium.png">
+	<meta name="msapplication-wide310x150logo" content="/res/icons/mstile-wide.png">
+	<meta name="msapplication-square310x310logo" content="/res/icons/mstile-large.png">
+
+	<!--[if lt IE 9]>
+	<script src="/theme/js/html5shiv.min.js"></script>
+	<script src="/theme/js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+	<div class="container">
+		<aside>
+			<a href="/"><img id="avatar" alt="Site Avatar" src="/res/icons/avatar.png"></a>
+			<div id="name"><a href="/">Tim Lehr</a></div>
+			<div id="bio">Software Engineer <a href="https://disneyanimation.com" target="_blank" rel="noopener noreferrer">@disneyanimation</a></div>
+
+			<div id="sidebar-links">
+				<a href="/about/">About</a>&nbsp;|&nbsp;<a href="/archive/">Archive</a>
+			</div>
+
+			<div id="social">
+				<a href="https://www.linkedin.com/in/lehrtim/" title="LinkedIn" class="icon fa fa-linkedin"></a>
+				<a href="https://github.com/timlehr" title="GitHub" class="icon fa fa-github"></a>
+				<a href="https://www.imdb.com/name/nm11461846/" title="IMDb" class="icon fa fa-imdb"></a>
+				<a href="mailto:03.must_gimlets@icloud.com" title="Email" class="icon fa fa-envelope"></a>
+			</div>
+
+			<hr id="sidebar-divider">
+		</aside>
+
+		<article>
+	<h1 class="title"><a href="/2018/12/python-scripting-in-davinci-resolve/" title="Permalink to Python Scripting in DaVinci Resolve">Python Scripting in DaVinci&nbsp;Resolve</a></h1>
+	<time class="date" datetime="2018-12-30 19:36:00-08:00">December 30, 2018</time>
+	<div class="content">
+		<p>Starting with <em>DaVinci Resolve 15</em>, Developer Blackmagic added new Scripting functionality to the popular Editing / Grading Suite. The Scripting <span class="caps">API</span> (Fusion Script) is implemented in a separate executable called <em>fuscript,</em> which supports two languages at the time of writing: Python 2.7 / 3 and Lua. The integration of Python is especially exciting for any Pipeline developer out there, as it allows for a tighter integration of Resolve into existing production pipelines. Pixars <a href="https://github.com/PixarAnimationStudios/OpenTimelineIO">OpenTimelineIO</a> is living proof that there is quite the demand for this kind of&nbsp;stuff!</p>
+<p>At the time of writing, the documentation for the new Scripting <span class="caps">API</span> is still .. well, there is none yet. Not really. All there is can be accessed via <strong>Help ➔ Developer Documentation</strong> which will open the developer directory of Resolve on your machine. In the <em>Scripting</em> subfolder you will find a <em><span class="caps">README</span>.txt</em>, that contains all official information currently available regarding scripting. This includes a very crude description of the available <span class="caps">API</span> functions. You will also find a bunch of example scripts written in both, Python and&nbsp;Lua.</p>
+<p>While I was searching around the web, I was able to collect some helpful information, resources and code examples. If I manage to find more worthwhile information regarding this topic, I will probably update this&nbsp;post.</p>
+<h2>Notes</h2>
+<p><strong>Python environment&nbsp;setup</strong></p>
+<p>If you are developing for Python don&#8217;t forget to set up your System / Python environment accordingly. You&#8217;ll find the most up-to-date details on how to do that in the official readme file from&nbsp;Blackmagic.</p>
+<p><strong>External / File script execution unavailable in free&nbsp;version</strong></p>
+<p>Playing around with the Python <span class="caps">API</span>, I was able to access and modify the current project via the Davinci Resolve Console (<em>Workspace</em><em>➔</em><em> Console</em>). However, I was unable to run any Python scripts from an external terminal window, since the resolve object could not be fetched and was always &#8220;NoneType&#8221; in my&nbsp;case.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">resolve</span> <span class="o">=</span> <span class="n">dvr_script</span><span class="o">.</span><span class="n">scriptapp</span><span class="p">(</span><span class="s2">&quot;Resolve&quot;</span><span class="p">)</span>
+<span class="nb">print</span> <span class="nb">type</span><span class="p">(</span><span class="n">resolve</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="o">&lt;</span><span class="n">Type</span> <span class="s1">&#39;NoneType&#39;</span><span class="o">&gt;</span>
+</code></pre></div>
+
+<p>In my case, the problem seems to be rooted in the fact that I am using the <em>free</em> version of Resolve. According to posts in the <span class="caps">BMD</span> forum, the free version of Resolve 15 is limited in it&#8217;s Scripting capabilities. The Resolve console is the only way to execute Python code in the free&nbsp;version.</p>
+<p>To make this a bit less of a pain, the <span class="caps">BMD</span> User Steeve Vincent <a href="https://forum.blackmagicdesign.com/viewtopic.php?f=12&amp;t=72497#p445423">shared a simple Python script</a> that sets up the environment for you and reads and executes any Python script file. Still not a great solution for free users, but better than starting with just the&nbsp;console.</p>
+<p>Source: <a href="https://forum.blackmagicdesign.com/viewtopic.php?f=12&amp;t=72497#p444196">https://forum.blackmagicdesign.com/viewtopic.php?f=12&amp;t=72497#p444196</a></p>
+<h2>Additional Resolve Scripting&nbsp;Resources</h2>
+<h3>Video&nbsp;Tutorials</h3>
+<ul>
+<li><strong>Python:</strong> <a href="https://www.youtube.com/watch?v=p6IeeWr3FOc">Scripting Introduction Tutorial by Igor&nbsp;Ridanovic</a></li>
+</ul>
+<h3>Repositories / Code&nbsp;Examples</h3>
+<ul>
+<li><strong>Python:</strong> <a href="https://github.com/IgorRidanovic?tab=repositories"><span class="caps">API</span> Tests / Experiments by Igor&nbsp;Ridanovic</a></li>
+<li><strong>Lua:</strong> <a href="https://www.steakunderwater.com/wesuckless/viewtopic.php?t=2012">Resolve Scripting Essentials by Greg&nbsp;Bovine</a></li>
+</ul>
+<p><strong>Last updated:</strong> 3. January&nbsp;2019</p>
+	</div>
+
+	<div id="related-articles">
+		<a href="/2019/04/export-all-maya-render-layers-as-ass-files-using-python/" id="next-neighbour">&laquo; Export all Maya render layers as ASS files using Python</a>
+		<a href="/2018/01/lazy-database-initialization-with-peewee-proxy-subclasses/" id="prev-neighbour">Lazy database initialization with peewee proxy subclasses &raquo;</a>
+	</div>
+
+			<hr>
+		</article>
+
+		<footer>
+			<p>Powered by <a href="http://getpelican.com" target="_blank" rel="noopener noreferrer">Pelican</a> and <a href="http://pages.github.com">GitHub&nbsp;Pages</a>.</p>
+		</footer>
+	</div>
+
+
+</body>
+</html>

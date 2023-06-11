@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Basic Metas -->
+	<meta charset="utf-8">
+	<title>Lazy database initialization with peewee proxy subclasses | Tim Lehr</title>
+	<meta name="description" content="If you are working with a SQL database in Python, I highly recommend to take a look at peewee. It’s a small, but very powerful ORM (Object relational mapping) tool that makes the interaction with your database very pythonic, convenient and …">
+	<meta name="author" content="">
+	<link rel="author" href=""/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<!-- Twitter Cards and Open Graph -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:creator" content="">
+	<meta name="twitter:domain" content="">
+	<meta name="twitter:site" content="">
+	<meta property="og:title" content="Lazy database initialization with peewee proxy subclasses">
+	<meta property="og:description" content="If you are working with a SQL database in Python, I highly recommend to take a look at peewee. It’s a small, but very powerful ORM (Object relational mapping) tool that makes the interaction with your database very pythonic, convenient and …">
+	<meta property="og:image" content="/res/icons/avatar.png">
+	<meta property="og:type" content="article">
+	<meta property="og:url" content="/2018/01/lazy-database-initialization-with-peewee-proxy-subclasses/">
+
+	<!-- Stylesheets and Web Fonts -->
+	<link href="/theme/style.min.css" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Favicons -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/res/icons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="/res/icons/favicon-16x16.png" sizes="16x16">
+	<link rel="icon" type="image/png" href="/res/icons/favicon-32x32.png" sizes="32x32">
+	<meta name="theme-color" content="#FFFFFF">
+
+	<meta name="msapplication-TileColor" content="#FFFFFF">
+	<meta name="msapplication-TileImage" content="/res/icons/mstile-144x144.png">
+	<meta name="msapplication-square70x70logo" content="/res/icons/mstile-small.png">
+	<meta name="msapplication-square150x150logo" content="/res/icons/mstile-medium.png">
+	<meta name="msapplication-wide310x150logo" content="/res/icons/mstile-wide.png">
+	<meta name="msapplication-square310x310logo" content="/res/icons/mstile-large.png">
+
+	<!--[if lt IE 9]>
+	<script src="/theme/js/html5shiv.min.js"></script>
+	<script src="/theme/js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+	<div class="container">
+		<aside>
+			<a href="/"><img id="avatar" alt="Site Avatar" src="/res/icons/avatar.png"></a>
+			<div id="name"><a href="/">Tim Lehr</a></div>
+			<div id="bio">Software Engineer <a href="https://disneyanimation.com" target="_blank" rel="noopener noreferrer">@disneyanimation</a></div>
+
+			<div id="sidebar-links">
+				<a href="/about/">About</a>&nbsp;|&nbsp;<a href="/archive/">Archive</a>
+			</div>
+
+			<div id="social">
+				<a href="https://www.linkedin.com/in/lehrtim/" title="LinkedIn" class="icon fa fa-linkedin"></a>
+				<a href="https://github.com/timlehr" title="GitHub" class="icon fa fa-github"></a>
+				<a href="https://www.imdb.com/name/nm11461846/" title="IMDb" class="icon fa fa-imdb"></a>
+				<a href="mailto:03.must_gimlets@icloud.com" title="Email" class="icon fa fa-envelope"></a>
+			</div>
+
+			<hr id="sidebar-divider">
+		</aside>
+
+		<article>
+	<h1 class="title"><a href="/2018/01/lazy-database-initialization-with-peewee-proxy-subclasses/" title="Permalink to Lazy database initialization with peewee proxy subclasses">Lazy database initialization with peewee proxy&nbsp;subclasses</a></h1>
+	<time class="date" datetime="2018-01-31 22:36:00-08:00">January 31, 2018</time>
+	<div class="content">
+		<p>If you are working with a <span class="caps">SQL</span> database in Python, I highly recommend to take a look at <a href="https://peewee.readthedocs.io/en/latest/">peewee</a>. It&#8217;s a small, but very powerful <span class="caps">ORM</span> (Object relational mapping) tool that makes the interaction with your database very pythonic, convenient and quite easy to learn (especially for the <span class="caps">SQL</span> beginners among you). I personally use peewee for my production pipeline tool-set called <em>Scarif</em>, which I currently develop with a fellow <span class="caps">TD</span> here at Filmakademie. So far, peewee has been an invaluable package for us, that saves us a lot of time during&nbsp;development.</p>
+<p>One of my favorite peewee features is it&#8217;s ability to initialize the python database models during runtime by providing the database with a proxy backend. This allows you to choose your database backend at runtime (e.g. <em>MySQL</em>, <em>SQLite</em> or <em>PostgreSQL</em>) and supply database connection credentials for example via config-file. Usually your base-model class with a proxy in place looks somewhat like&nbsp;this:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">peewee</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">global_database_object</span> <span class="o">=</span> <span class="n">Proxy</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">BaseModel</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Basemodel from which all other peewee models are derived.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">database</span> <span class="o">=</span> <span class="n">global_database_object</span>
+</code></pre></div>
+
+<p>If you now want to initialize your database with a real backend of your choice during runtime, you&#8217;ll have to call the initialization function on the proxy before using the database in any way or otherwise you will be greeted with an&nbsp;exception.</p>
+<div class="codehilite"><pre><span></span><code>my_runtime_db = MySQLDatabase(&#39;myDatabaseName&#39;,
+                                **{&#39;host&#39;: &#39;localhost&#39;,
+                                &#39;user&#39;: &#39;root&#39;
+                                &#39;password&#39;: &quot;superS3cr3t&quot;,
+                                &#39;port&#39;: 3306,
+                                })
+global_database_object.initialize(my_runtime_db)
+</code></pre></div>
+
+<p>It&#8217;s as easy as that. Sometimes however, you might have a lot of different applications and tools accessing the database, so you will always have to remember to do the initialization first thing. Wouldn&#8217;t it be nice if you could just let peewee handle this call for you, so you don&#8217;t have to worry about anything? To do this, you only need a subclass of the peewee proxy as well as a couple of lines of&nbsp;code.</p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="n">CustomProxy</span><span class="p">(</span><span class="n">Proxy</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simple :obj:`peewee.proxy` subclass that tries to initialize the DB proxy on-demand.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">attr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; If a member of the proxy is being accessed, </span>
+<span class="sd">            and it&#39;s not yet initialized (obj == None), try initialization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="w"> </span><span class="k">is</span><span class="w"> </span><span class="n">None</span><span class="p">:</span>
+<span class="w">            </span><span class="bp">self</span><span class="o">.</span><span class="n">initialize_proxy</span><span class="p">()</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">super</span><span class="p">(</span><span class="n">ScProxy</span><span class="p">,</span><span class="w"> </span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__getattr__</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
+
+<span class="w">    </span><span class="n">def</span><span class="w"> </span><span class="n">initialize_proxy</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper function that initializes the proxy with credentials read from somewhere else (e.g. config-file). </span>
+<span class="sd">        For demonstration purposes, they are hardcoded though. :) </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="nb">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Access to uninitialized DB proxy requested. Try initialization ...&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="n">lazy_loaded_db</span><span class="o">=</span><span class="w"> </span><span class="n">MySQLDatabase</span><span class="p">(</span><span class="s1">&#39;myDatabaseName&#39;</span><span class="p">,</span>
+<span class="w">                                </span><span class="o">**</span><span class="p">{</span><span class="s1">&#39;host&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
+<span class="w">                                </span><span class="s1">&#39;user&#39;</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;root&#39;</span><span class="p">,</span>
+<span class="w">                                </span><span class="s1">&#39;password&#39;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;superS3cr3t&quot;</span><span class="p">,</span>
+<span class="w">                                </span><span class="s1">&#39;port&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">3306</span>
+<span class="w">                                </span><span class="p">})</span>
+<span class="w">        </span><span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">lazy_loaded_db</span><span class="p">)</span>
+
+<span class="n">global_database_object</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomProxy</span><span class="p">()</span>
+</code></pre></div>
+
+<p>This little subclass takes care of everything. Whenever something or someone is trying to use the proxy, the proxy will check if it&#8217;s initialized and try to do so if it&#8217;s not. This way you make the initialization on-demand. Now for some scenarios this might not be acceptable, since you are really initializing as late as possible and delaying the actual (first) request, but in most cases you&#8217;ll be fine. Here is the full example code for your enjoyment. Happy&nbsp;coding.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">peewee</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">logging</span> 
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">CustomProxy</span><span class="p">(</span><span class="n">Proxy</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simple :obj:`peewee.proxy` subclass that tries to initialize the DB proxy on-demand.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; If a member of the proxy is being accessed, </span>
+<span class="sd">            and it&#39;s not yet initialized (obj == None), try initialization.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initialize_proxy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ScProxy</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">initialize_proxy</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper function that initializes the proxy with credentials read from somewhere else (e.g. config-file). </span>
+<span class="sd">        For demonstration purposes, they are hardcoded though. :) </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Access to uninitialized DB proxy requested. Try initialization ...&quot;</span><span class="p">)</span>
+        <span class="n">lazy_loaded_db</span><span class="o">=</span> <span class="n">MySQLDatabase</span><span class="p">(</span><span class="s1">&#39;myDatabaseName&#39;</span><span class="p">,</span>
+                                <span class="o">**</span><span class="p">{</span><span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="s1">&#39;root&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="s2">&quot;superS3cr3t&quot;</span><span class="p">,</span>
+                                <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="mi">3306</span>
+                                <span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">lazy_loaded_db</span><span class="p">)</span>
+
+<span class="n">global_database_object</span> <span class="o">=</span> <span class="n">CustomProxy</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">BaseModel</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Basemodel from which all other peewee models are derived.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">database</span> <span class="o">=</span> <span class="n">global_database_object</span>
+</code></pre></div>
+	</div>
+
+	<div id="related-articles">
+		<a href="/2018/12/python-scripting-in-davinci-resolve/" id="next-neighbour">&laquo; Python Scripting in DaVinci Resolve</a>
+		<a href="/2018/01/auto-mount-samba-cifs-shares-via-fstab-on-linux/" id="prev-neighbour">Auto-mount Samba / CIFS shares via fstab on Linux &raquo;</a>
+	</div>
+
+			<hr>
+		</article>
+
+		<footer>
+			<p>Powered by <a href="http://getpelican.com" target="_blank" rel="noopener noreferrer">Pelican</a> and <a href="http://pages.github.com">GitHub&nbsp;Pages</a>.</p>
+		</footer>
+	</div>
+
+
+</body>
+</html>
